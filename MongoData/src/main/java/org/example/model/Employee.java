@@ -64,7 +64,7 @@ public class Employee implements java.io.Serializable{
         return id;
     }
 
-    private String getFirstName() {
+    public String getFirstName() {
         return firstName;
     }
 
@@ -72,7 +72,7 @@ public class Employee implements java.io.Serializable{
         return lastName;
     }
 
-    private int getYear() {
+    public int getYear() {
         return year;
     }
 

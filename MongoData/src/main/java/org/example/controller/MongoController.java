@@ -9,13 +9,21 @@ package org.example.controller;
 import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
+import org.example.model.Employee;
+import org.example.view.UserInterface;
+
+import javax.print.Doc;
 
 public class MongoController {
+    public MongoClient mongoClient;
+    UserInterface UI = new UserInterface();
 
     public MongoController() {
-        MongoClient mongoClient = buildConnection();
+        mongoClient = buildConnection();
     }
 
 
@@ -33,19 +41,46 @@ public class MongoController {
                 .serverApi(serverApi)
                 .build();
         // Create a new client and connect to the server
-        try (MongoClient mongoClient = MongoClients.create(settings)) {
-            try {
-                // Send a ping to confirm a successful connection
-                MongoDatabase database = mongoClient.getDatabase("Employee");
-                database.runCommand(new Document("ping", 1));
-                System.out.println("Pinged your deployment. You successfully connected to MongoDB!");
-                return mongoClient;
-            } catch (MongoException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
+        MongoClient mongoClient = MongoClients.create(settings);
+
+        // Send a ping to confirm a successful connection
+        MongoDatabase database = mongoClient.getDatabase("Employee");
+        database.runCommand(new Document("ping", 1));
+        System.out.println("Pinged your deployment. You successfully connected to MongoDB!");
+        return mongoClient;
     }
 
+    /**
+     * This method adds ONE specific user to the database
+     *
+     * @param employee the employee added to the database
+     */
+    public void addToDatabase(Employee employee){
+        //access database
+        MongoDatabase database = mongoClient.getDatabase("Employee");
+        MongoCollection<Document> collection = database.getCollection("Employees");
 
+        Document doc = new Document("id", employee.getId())
+                .append("first_name", employee.getFirstName())
+                .append("last_name", employee.getLastName())
+                .append("hire_year", employee.getYear());
+
+        collection.insertOne(doc);
+        UI.displayMessage("Added to Database");
+    }
+
+    public void deleteFromDatabase(int employeeId){
+        MongoDatabase database = mongoClient.getDatabase("Employee");
+        MongoCollection<Document> collection = database.getCollection("Employees");
+
+        Document filter = new Document("id", employeeId);
+
+        DeleteResult result = collection.deleteOne(filter);
+
+        if(result.getDeletedCount() > 0){
+            UI.displayMessage("Document with id " + employeeId + " was deleted.");
+        } else {
+            UI.displayMessage("Nothing was found under id: " + employeeId);
+        }
+    }
 }
