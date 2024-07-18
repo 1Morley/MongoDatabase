@@ -7,28 +7,33 @@
 package org.example.controller;
 
 import com.mongodb.*;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.*;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.example.model.Employee;
 import org.example.view.UserInterface;
 
-import javax.print.Doc;
+import java.io.IOException;
 
+/**
+ * This class deals with all the logic for connecting to the MongoDB and storing information
+ * inside of MongoDB Atlas
+ * <p>
+ *  BuildConnection() starts the connection for the database and generates a client
+ *  to use throughout the program
+ */
 public class MongoController {
-    public MongoClient mongoClient;
+    private final MongoClient mongoClient;
     UserInterface UI = new UserInterface();
 
     public MongoController() {
+        //builds the client every time the class is called
         mongoClient = buildConnection();
     }
 
 
     /**
-     * buildConnection() tests the connection to the database, and if it works, it will generate a mongoClient for
+     * buildConnection() tests the connection to the database, and generates a mongoClient for
      * use during the rest of the program
      */
     public MongoClient buildConnection() {
@@ -46,7 +51,7 @@ public class MongoController {
         // Send a ping to confirm a successful connection
         MongoDatabase database = mongoClient.getDatabase("Employee");
         database.runCommand(new Document("ping", 1));
-        System.out.println("Pinged your deployment. You successfully connected to MongoDB!");
+        UI.displayMessage("Pinged your deployment. You successfully connected to MongoDB!");
         return mongoClient;
     }
 
@@ -69,6 +74,42 @@ public class MongoController {
         UI.displayMessage("Added to Database");
     }
 
+    /**
+     * Takes an employeeID and uses that ID to find
+     * that certain employee in the database
+     * @param employeeId the ID it searches for
+     * @return the Employee it found
+     */
+    public Employee readDatabase(int employeeId){
+        MongoDatabase database = mongoClient.getDatabase("Employee");
+        MongoCollection<Document> collection = database.getCollection("Employees");
+
+        Document filter = new Document("id", employeeId);
+        FindIterable<Document> foundDocuments = collection.find(filter);
+
+        if(foundDocuments.first() != null){
+            Document found = foundDocuments.first();
+
+            if(found == null){
+                UI.displayMessage("An error occurred");
+                return null;
+            }
+
+            return new Employee(
+                    found.getInteger("id"),
+                    found.getString("first_name"),
+                    found.getString("last_name"),
+                    found.getInteger("hire_year"));
+        }else {
+            UI.displayMessage("No Document found with id: " + employeeId);
+            return null;
+        }
+    }
+
+    /**
+     * deleteFromDatabase will delete a certain object from the database, deletes by ID
+     * @param employeeId the ID that was saved to the database that will be deleted
+     */
     public void deleteFromDatabase(int employeeId){
         MongoDatabase database = mongoClient.getDatabase("Employee");
         MongoCollection<Document> collection = database.getCollection("Employees");
@@ -82,5 +123,44 @@ public class MongoController {
         } else {
             UI.displayMessage("Nothing was found under id: " + employeeId);
         }
+    }
+
+
+    /**
+     * Updates an employee based on their ID, if no employee is there, updates nothing
+     * @param EmployeeID The ID of the employee you want updated
+     */
+    public void updateFromDatabase(int EmployeeID) {
+        Employee employee = readDatabase(EmployeeID);
+
+        UI.displayEmployee(employee);
+        UI.displayMessage("Enter information to update for the employee (leave empty to keep the same)");
+        String firstname = UI.updateName("First name: ");
+        String lastname = UI.updateName("Last name: ");
+        int year = UI.updateYear("Year: ");
+
+        if(firstname == null || firstname.isEmpty()){
+            firstname = employee.getFirstName();
+        }
+        if(lastname == null || lastname.isEmpty()){
+            lastname = employee.getLastName();
+        }
+        if(year == 0){
+            year = employee.getYear();
+        }
+
+        Employee newEmployee = new Employee(employee.getId(), firstname, lastname, year);
+
+        deleteFromDatabase(employee.getId());
+        addToDatabase(newEmployee);
+    }
+
+    public void closeMongoClient(){
+        mongoClient.close();
+    }
+
+    //TODO: take the hashmap and generate a .json file to import to the database
+    public void importEmployees(){
+
     }
 }

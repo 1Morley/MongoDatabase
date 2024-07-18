@@ -80,6 +80,7 @@ public class UserInterface {
             }
         }
     }
+
     public int getYearInput() {
         while (true) {
             String yearStr = getString("Year: ").trim();
@@ -97,5 +98,34 @@ public class UserInterface {
 
     public void displayTime(long time, String processName){
         System.out.println("(" + processName + " Took " + time + " Seconds)");
+    }
+
+
+    //this method may seem repetitive, but one of my checks in mongoDB controller allows for the user to leave the space empty,
+    //so I need to accommodate for that
+    public String updateName(String question) {
+        displayMessage(question);
+        try {
+            return br.readLine();
+        }catch (IOException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //this method may seem repetitive, but one of my checks in mongoDB controller allows for the user to leave the space empty,
+    //so I need to accommodate for that
+    public int updateYear(String question)  {
+        displayMessage(question);
+        int returner;
+        try {
+            returner = Integer.parseInt(br.readLine());
+            return returner;
+        } catch (NumberFormatException ignored){
+            return 0;
+        } catch (IOException e){
+            e.printStackTrace();
+            return 0;
+        }
     }
 }
