@@ -12,9 +12,6 @@ import org.example.view.UserInterface;
 import java.util.ArrayList;
 
 public class MenuController {
-    private enum AppState {
-        START, EXIT, ADD, DELETE, FIND, UPDATE, SERIAL_CONTENT
-    }
     private UserInterface ui = new UserInterface();
     private FileController fc = new FileController();
 
@@ -26,47 +23,27 @@ public class MenuController {
     public void run(){
         setup();
         boolean exit = false;
-        while(exit == false){
-            switch (switchAppState()){
-                case ADD:
+        while(!exit){
+            switch (ui.displayMenu()){
+                case 1:
                     fc.addCustomEmployee();
                     break;
-                case DELETE:
+                case 2:
                     fc.deleteEmployee();
                     break;
-                case FIND:
+                case 3:
                     fc.findEmployee();
                     break;
-                case UPDATE:
+                case 4:
                     fc.updateEmployee();
                     break;
-                case SERIAL_CONTENT:
+                case 5:
                     fc.showSerializedContent(ui.getIntInput("Enter Employee ID"));
                     break;
-                case EXIT:
+                default:
                     exit = true;
                     break;
             }
         }
     }
-
-    private AppState switchAppState(){
-        switch(ui.displayMenu()){
-            case 1:
-                return AppState.ADD;
-            case 2:
-                return AppState.DELETE;
-            case 3:
-                return AppState.FIND;
-            case 4:
-                return AppState.UPDATE;
-            case 5:
-                return AppState.SERIAL_CONTENT;
-            case 6:
-                return AppState.EXIT;
-            default: return AppState.START;
-        }
-    }
-
-
 }
