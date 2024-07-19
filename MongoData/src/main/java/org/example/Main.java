@@ -6,20 +6,19 @@ import org.example.model.Employee;
 import org.example.view.UserInterface;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args){
         //FIXME: TESTING
         MongoController m = new MongoController();
         UserInterface UI = new UserInterface();
+        FileController fc = new FileController();
 
-        Employee e = new Employee(1, "Tommy", "Southerland", 1999);
+        fc.readAllFiles();
 
-        m.addToDatabase(e);
-        UI.displayMessage(m.readDatabase(e.getId()).toString());
-        m.deleteFromDatabase(e.getId());
-
-        m.updateFromDatabase(e.getId());
+        m.importEmployees(fc.getDocumentList());
 
         m.closeMongoClient();
 

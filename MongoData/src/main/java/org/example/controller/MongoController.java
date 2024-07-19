@@ -163,7 +163,11 @@ public class MongoController {
         mongoClient.close();
     }
 
-    //TODO: take the hashmap and generate a .json file to import to the database
-    public void importEmployees(){
+    //TODO: upload doc file to the atlas db
+    public void importEmployees(List<Document> docList){
+        MongoDatabase database = mongoClient.getDatabase("Employee");
+        MongoCollection<Document> collection = database.getCollection("Employees");
+
+        collection.insertMany(docList);
     }
 }
