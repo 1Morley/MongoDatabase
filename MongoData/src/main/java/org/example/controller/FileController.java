@@ -7,18 +7,20 @@
 package org.example.controller;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.Document;
+import org.bson.json.JsonObject;
 import org.example.model.Employee;
 import org.example.view.UserInterface;
 
+import javax.print.Doc;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 //because of file creation and employee creation being heavily intertwined,
 //all data management methods are in this class
@@ -267,5 +269,40 @@ public class FileController {
     }
 
 
+    public void makeJsonFile(){
+        ObjectMapper map = new ObjectMapper();
+
+        try{
+            FileWriter write = new FileWriter("JsonFile.json");
+            for (Map.Entry<Integer, Employee> select : employeeID.entrySet()) {
+                write.write(String.valueOf(map.writerWithDefaultPrettyPrinter().writeValueAsString(select.getValue())));
+                //write.write(map.writeValueAsString(select.getValue()));
+                //I don't know how the formatting will affect reading the file, so the second version is unformatted
+            }
+
+            write.close();
+
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public List<Document> getDocumentList(){
+        ObjectMapper map = new ObjectMapper();
+        List<Document> doc = new ArrayList<>();
+
+        try{
+            for (Map.Entry<Integer, Employee> select : employeeID.entrySet()) {
+                doc.add(Document.parse(String.valueOf(map.writerWithDefaultPrettyPrinter().writeValueAsString(select.getValue()))));
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return doc;
+
+    }
 
 }
