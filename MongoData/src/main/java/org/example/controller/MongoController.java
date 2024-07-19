@@ -30,9 +30,15 @@ public class MongoController {
     private final MongoClient mongoClient;
     UserInterface UI = new UserInterface();
 
+    MongoDatabase database;
+    MongoCollection<Document> collection;
+
     public MongoController() {
         //builds the client every time the class is called
         mongoClient = buildConnection();
+
+        database = mongoClient.getDatabase("Employee");
+        collection = database.getCollection("Employees");
     }
 
 
@@ -66,9 +72,6 @@ public class MongoController {
      */
     public void addToDatabase(Employee employee){
         //access database
-        MongoDatabase database = mongoClient.getDatabase("Employee");
-        MongoCollection<Document> collection = database.getCollection("Employees");
-
         Document doc = new Document("id", employee.getId())
                 .append("first_name", employee.getFirstName())
                 .append("last_name", employee.getLastName())
@@ -85,9 +88,6 @@ public class MongoController {
      * @return the Employee it found
      */
     public Employee readDatabase(int employeeId){
-        MongoDatabase database = mongoClient.getDatabase("Employee");
-        MongoCollection<Document> collection = database.getCollection("Employees");
-
         Document filter = new Document("id", employeeId);
         FindIterable<Document> foundDocuments = collection.find(filter);
 
@@ -115,9 +115,6 @@ public class MongoController {
      * @param employeeId the ID that was saved to the database that will be deleted
      */
     public void deleteFromDatabase(int employeeId){
-        MongoDatabase database = mongoClient.getDatabase("Employee");
-        MongoCollection<Document> collection = database.getCollection("Employees");
-
         Document filter = new Document("id", employeeId);
 
         DeleteResult result = collection.deleteOne(filter);
@@ -159,15 +156,16 @@ public class MongoController {
         addToDatabase(newEmployee);
     }
 
+    /**
+     * Closes the connection between the database and the user (MUST BE RAN AT THE END
+     * OF THE PROGRAM EVERY SINGLE TIME)
+     */
     public void closeMongoClient(){
         mongoClient.close();
     }
 
-    //TODO: upload doc file to the atlas db
-    public void importEmployees(List<Document> docList){
-        MongoDatabase database = mongoClient.getDatabase("Employee");
-        MongoCollection<Document> collection = database.getCollection("Employees");
 
+    public void importEmployees(List<Document> docList){
         collection.insertMany(docList);
     }
 }
