@@ -10,10 +10,14 @@ import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
+import org.bson.json.JsonObject;
 import org.example.model.Employee;
 import org.example.view.UserInterface;
 
+import javax.print.Doc;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * This class deals with all the logic for connecting to the MongoDB and storing information
@@ -161,6 +165,5 @@ public class MongoController {
 
     //TODO: take the hashmap and generate a .json file to import to the database
     public void importEmployees(){
-
     }
 }

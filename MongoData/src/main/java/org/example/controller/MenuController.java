@@ -15,15 +15,12 @@ public class MenuController {
     private enum AppState {
         START, EXIT, ADD, DELETE, FIND, UPDATE, SERIAL_CONTENT
     }
-    private final static String DATA_FOLDER_PATH = "C:\\Assignment 1 - data-1\\people\\long\\", FILE_EXTENSION = ".txt";
-    private ArrayList<Employee> employeeList = new ArrayList<>();
     private UserInterface ui = new UserInterface();
     private FileController fc = new FileController();
 
     private void setup(){
         fc.readAllFiles();
-        fc.serializeAllEmployees();
-        //fc.testNum();
+        //fc.serializeAllEmployees();
     }
 
     public void run(){
