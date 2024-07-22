@@ -76,7 +76,7 @@ public class Employee implements java.io.Serializable{
         return year;
     }
 
-    public String DocumentForm() {
+    public String getDocumentForm() {
         return documentForm;
     }
 

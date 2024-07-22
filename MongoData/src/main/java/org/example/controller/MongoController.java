@@ -9,14 +9,10 @@ package org.example.controller;
 import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.result.DeleteResult;
-import org.bson.Document;
-import org.bson.json.JsonObject;
-import org.example.model.Employee;
-import org.example.view.UserInterface;
+import static com.mongodb.client.model.Sorts.descending;
 
-import javax.print.Doc;
-import java.io.IOException;
-import java.util.HashMap;
+import org.bson.Document;
+import org.example.model.Employee;
 import java.util.List;
 
 /**
@@ -28,8 +24,6 @@ import java.util.List;
  */
 public class MongoController {
     private final MongoClient mongoClient;
-    UserInterface UI = new UserInterface();
-
     MongoDatabase database;
     MongoCollection<Document> collection;
 
@@ -38,7 +32,7 @@ public class MongoController {
         mongoClient = buildConnection();
 
         database = mongoClient.getDatabase("Employee");
-        collection = database.getCollection("Employees");
+        collection = database.getCollection("test");
     }
 
 
@@ -46,7 +40,7 @@ public class MongoController {
      * buildConnection() tests the connection to the database, and generates a mongoClient for
      * use during the rest of the program
      */
-    public MongoClient buildConnection() {
+    private MongoClient buildConnection() {
         String connectionString = "mongodb+srv://tommysmith12443:immamakethisareallygoodpassword@main.s3hilgi.mongodb.net/?retryWrites=true&w=majority&appName=Main";
         ServerApi serverApi = ServerApi.builder()
                 .version(ServerApiVersion.V1)
@@ -61,7 +55,7 @@ public class MongoController {
         // Send a ping to confirm a successful connection
         MongoDatabase database = mongoClient.getDatabase("Employee");
         database.runCommand(new Document("ping", 1));
-        UI.displayMessage("Pinged your deployment. You successfully connected to MongoDB!");
+        //UI.displayMessage("Pinged your deployment. You successfully connected to MongoDB!");
         return mongoClient;
     }
 
@@ -78,7 +72,7 @@ public class MongoController {
                 .append("hire_year", employee.getYear());
 
         collection.insertOne(doc);
-        UI.displayMessage("Added to Database");
+        //UI.displayMessage("Added to Database");
     }
 
     /**
@@ -95,7 +89,7 @@ public class MongoController {
             Document found = foundDocuments.first();
 
             if(found == null){
-                UI.displayMessage("An error occurred");
+                //UI.displayMessage("An error occurred");
                 return null;
             }
 
@@ -105,7 +99,7 @@ public class MongoController {
                     found.getString("last_name"),
                     found.getInteger("hire_year"));
         }else {
-            UI.displayMessage("No Document found with id: " + employeeId);
+            //UI.displayMessage("No Document found with id: " + employeeId);
             return null;
         }
     }
@@ -119,11 +113,6 @@ public class MongoController {
 
         DeleteResult result = collection.deleteOne(filter);
 
-        if(result.getDeletedCount() > 0){
-            UI.displayMessage("Document with id " + employeeId + " was deleted.");
-        } else {
-            UI.displayMessage("Nothing was found under id: " + employeeId);
-        }
     }
 
 
@@ -131,14 +120,9 @@ public class MongoController {
      * Updates an employee based on their ID, if no employee is there, updates nothing
      * @param EmployeeID The ID of the employee you want updated
      */
-    public void updateFromDatabase(int EmployeeID) {
+    public void updateFromDatabase(int EmployeeID, String firstname, String lastname, int year) {
         Employee employee = readDatabase(EmployeeID);
 
-        UI.displayEmployee(employee);
-        UI.displayMessage("Enter information to update for the employee (leave empty to keep the same)");
-        String firstname = UI.updateName("First name: ");
-        String lastname = UI.updateName("Last name: ");
-        int year = UI.updateYear("Year: ");
 
         if(firstname == null || firstname.isEmpty()){
             firstname = employee.getFirstName();
@@ -156,6 +140,11 @@ public class MongoController {
         addToDatabase(newEmployee);
     }
 
+    public void updateFromDatabase(Employee replacement){
+        deleteFromDatabase(replacement.getId());
+        addToDatabase(replacement);
+    }
+
     /**
      * Closes the connection between the database and the user (MUST BE RAN AT THE END
      * OF THE PROGRAM EVERY SINGLE TIME)
@@ -167,5 +156,24 @@ public class MongoController {
 
     public void importEmployees(List<Document> docList){
         collection.insertMany(docList);
+    }
+
+    public void wipeCollection(){
+        collection.drop();
+    }
+
+    public void mergeDatabase(Employee[] list){
+        for (Employee select : list) {
+            if(readDatabase(select.getId()) == null){
+                addToDatabase(select);
+            }else{
+                updateFromDatabase(select);
+            }
+        }
+    }
+
+    public int getNextID(){
+        Document lastDoc = collection.find().sort(descending("id")).limit(1).first();
+        return (lastDoc.getInteger("id") + 1);
     }
 }

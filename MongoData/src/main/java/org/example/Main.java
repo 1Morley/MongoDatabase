@@ -1,27 +1,22 @@
 package org.example;
 
-import org.example.controller.FileController;
-import org.example.controller.MongoController;
-import org.example.model.Employee;
-import org.example.view.UserInterface;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.example.controller.MenuController;
 
 public class Main {
     public static void main(String[] args){
         //FIXME: TESTING
-        MongoController m = new MongoController();
-        UserInterface UI = new UserInterface();
-        FileController fc = new FileController();
 
-        fc.readAllFiles();
+        //MongoController m = new MongoController();
+        //UserInterface UI = new UserInterface();
+        //FileController fc = new FileController();
 
-        m.importEmployees(fc.getDocumentList());
+        //fc.readAllFiles();
 
-        m.closeMongoClient();
+        //m.importEmployees(fc.getDocumentList());
 
-        System.out.println("Hello world!");
+        //m.closeMongoClient();
+
+        new MenuController().run();
+        System.out.println("END PROGRAM");
     }
 }
