@@ -32,7 +32,7 @@ public class MongoController {
         mongoClient = buildConnection();
 
         database = mongoClient.getDatabase("Employee");
-        collection = database.getCollection("test");
+        collection = database.getCollection("Employees");
     }
 
 
