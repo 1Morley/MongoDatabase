@@ -67,9 +67,9 @@ public class MongoController {
     public void addToDatabase(Employee employee){
         //access database
         Document doc = new Document("id", employee.getId())
-                .append("first_name", employee.getFirstName())
-                .append("last_name", employee.getLastName())
-                .append("hire_year", employee.getYear());
+                .append("firstName", employee.getFirstName())
+                .append("lastName", employee.getLastName())
+                .append("year", employee.getYear());
 
         collection.insertOne(doc);
         //UI.displayMessage("Added to Database");
@@ -95,9 +95,9 @@ public class MongoController {
 
             return new Employee(
                     found.getInteger("id"),
-                    found.getString("first_name"),
-                    found.getString("last_name"),
-                    found.getInteger("hire_year"));
+                    found.getString("firstName"),
+                    found.getString("lastName"),
+                    found.getInteger("year"));
         }else {
             //UI.displayMessage("No Document found with id: " + employeeId);
             return null;
@@ -174,6 +174,9 @@ public class MongoController {
 
     public int getNextID(){
         Document lastDoc = collection.find().sort(descending("id")).limit(1).first();
+        if(lastDoc == null){
+            return 1;
+        }
         return (lastDoc.getInteger("id") + 1);
     }
 }
