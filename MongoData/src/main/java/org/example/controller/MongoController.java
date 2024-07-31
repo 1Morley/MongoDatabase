@@ -41,7 +41,7 @@ public class MongoController {
      * use during the rest of the program
      */
     private MongoClient buildConnection() {
-        String connectionString = "mongodb+srv://tommysmith12443:immamakethisareallygoodpassword@main.s3hilgi.mongodb.net/?retryWrites=true&w=majority&appName=Main";
+        String connectionString = "mongodb+srv://amorley:OmgAPassword@cluster0.x3i5vov.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
         ServerApi serverApi = ServerApi.builder()
                 .version(ServerApiVersion.V1)
                 .build();
