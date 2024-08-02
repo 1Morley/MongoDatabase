@@ -6,9 +6,10 @@
  */
 package org.example.controller;
 
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
+import org.example.model.Employee;
+import org.neo4j.driver.*;
+
+import java.util.HashSet;
 
 public class NeoController {
     //TODO in order for this to work, neo4j needs to be running in the background and have the proper user,password,and localhost number
@@ -20,7 +21,6 @@ public class NeoController {
         var driver = GraphDatabase.driver(URI, AuthTokens.basic(user, password));
         database = driver;
         database.verifyConnectivity();
-        closeNeoConnection();
     }
 
     /**
@@ -28,5 +28,36 @@ public class NeoController {
      */
     public void closeNeoConnection(){
         database.close();
+    }
+    public void uploadData(HashSet<Employee> employees){
+        for(Employee employee: employees){
+            insertEmlpoyee(employee);
+        }
+    }
+    public void insertEmlpoyee(Employee employee){
+        try (Session session = database.session()) {
+            String cypherQuery = "CREATE (e:Employee {id: $id, firstName: $firstName, lastName: $lastName, year: $year})";
+            try (Transaction tx = session.beginTransaction()) {
+                tx.run(cypherQuery,
+                        org.neo4j.driver.Values.parameters(
+                                "id", employee.getId(), //I did a little research and it said its internal id cannot be changed
+                                                                    // If you find out differently let me know
+                                "firstName", employee.getFirstName(),
+                                "lastName", employee.getLastName(),
+                                "year", employee.getYear()));
+                tx.commit();
+            }
+        }
+        System.out.println("Employee inserted");
+    }
+    public void deleteEmployee(int id){
+        try (Session session = database.session()) {
+            String cypherQuery = "MATCH (e:Employee) WHERE e.id = $id DELETE e";
+            try (Transaction tx = session.beginTransaction()) {
+                tx.run(cypherQuery, org.neo4j.driver.Values.parameters("id", id));
+                tx.commit();
+            }
+        }
+        System.out.println("Employee deleted");
     }
 }
