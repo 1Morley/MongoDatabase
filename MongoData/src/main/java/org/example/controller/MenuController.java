@@ -23,7 +23,13 @@ public class MenuController {
         while(!exit){
             startTime = LocalTime.now();
             switch (ui.displayMenu(new String[]
-                    {"Add Employee", "Delete Employee", "Find Employee", "Update Employee", "Show Serialized Content", "Import Files to Mongo", "Exit"})){
+                    {"Add Employee"
+                            , "Delete Employee"
+                            , "Find Employee"
+                            , "Update Employee"
+                            , "Show Serialized Content (Only works if File database is active)"
+                            , "Import Files to Mongo (Only works if File and Mongo database is active)"
+                            , "Exit"})){
                 case 1:
                     String[] addInfo = ui.getFullEmployeeInfo(false);
                     ui.displayInfo(data.addEmployee(addInfo[0], addInfo[1], Integer.valueOf(addInfo[2])), "Employee");
@@ -33,16 +39,16 @@ public class MenuController {
                     data.deleteEmployee(deleteId);
                     break;
                 case 3:
-                    ui.displayInfo(data.findMongoEmployee(ui.getEmployeeId()), "Employee");
+                    ui.displayInfo(data.findEmployeeById(ui.getEmployeeId()), "Employee");
                     break;
                 case 4:
                     int id = ui.getEmployeeId();
-                    String oldData = data.findMongoEmployee(id);
+                    String oldData = data.findEmployeeById(id);
                     ui.displayInfo(oldData, "Old Employee");
                     if(oldData != null){
                         String[] updateInfo = ui.getFullEmployeeInfo(true);
                         data.updateEmployee(id, updateInfo[0], updateInfo[1], Integer.valueOf(updateInfo[2]));
-                        ui.displayInfo(data.findMongoEmployee(id), "Updated Employee");
+                        ui.displayInfo(data.findEmployeeById(id), "Updated Employee");
                     }
                     break;
                 case 5:
@@ -55,10 +61,10 @@ public class MenuController {
                             "Replace Collection (ALL PREVIOUS DOCUMENTS WILL BE DELETED)",
                             "Merge Databases (REPLACE PRE-EXISTING IDS)"})){
                         case 1:
-                            data.addFilesToMongo(false);
+                            data.addFileListToMongo(false);
                             break;
                         case 2:
-                            data.addFilesToMongo(true);
+                            data.addFileListToMongo(true);
                             break;
                         case 3:
                             data.mergeFilesWithMongo();

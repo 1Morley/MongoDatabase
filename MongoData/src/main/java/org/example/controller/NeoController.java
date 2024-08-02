@@ -17,8 +17,7 @@ public class NeoController {
     Driver database;
 
     public NeoController(){
-        var driver = GraphDatabase.driver(URI, AuthTokens.basic(user, password));
-        database = driver;
+        database = GraphDatabase.driver(URI, AuthTokens.basic(user, password));
         database.verifyConnectivity();
         closeNeoConnection();
     }
