@@ -46,6 +46,11 @@ public class DatabaseController {
             mango.addToDatabase(new Employee(id,first,last,year));
             return mango.readDatabase(id).toString();
         }
+        if (NEO){
+            id = neo.getNextID();
+            neo.insertEmlpoyee(new Employee(id,first,last,year));
+            //return neo.findEmployeeById(id).toString();
+        }
         if (FILES){
             id = Collections.max(employeeID.keySet()) + 1;
 
@@ -62,6 +67,9 @@ public class DatabaseController {
     public void deleteEmployee(int employeeId){
         if(MONGO){
             mango.deleteFromDatabase(employeeId);
+        }
+        if (NEO){
+            neo.deleteEmployee(employeeId);
         }
         if (FILES){
             if (employeeID.containsKey(employeeId)) {
@@ -188,12 +196,6 @@ public class DatabaseController {
 
     public void uploadDataToNeo(){
         neo.uploadData(new HashSet<>(employeeID.values()));
-    }
-    public void deleteNeoEmployee(int id){
-        neo.deleteEmployee(id);
-    }
-    public void insertNeoEmployee(Employee employee){
-        neo.insertEmlpoyee(employee);
     }
     public void closeNeoConnection(){
         neo.closeNeoConnection();

@@ -49,6 +49,18 @@ public class NeoController {
         }
         System.out.println("Employee inserted");
     }
+    public int getNextID(){
+        try (Session session = database.session()) {
+            String cypherQuery = "MATCH (e:Employee) RETURN e.id ORDER BY e.id DESC LIMIT 1";
+            try (Transaction tx = session.beginTransaction()) {
+                Result result = tx.run(cypherQuery);
+                if(result.hasNext()){
+                    return result.single().get(0).asInt() + 1;
+                }
+            }
+        }
+        return 0;
+    }
     public void deleteEmployee(int id){
         try (Session session = database.session()) {
             String cypherQuery = "MATCH (e:Employee) WHERE e.id = $id DELETE e";
