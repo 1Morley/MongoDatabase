@@ -14,20 +14,29 @@ import org.example.model.Employee;
 import java.util.*;
 
 public class DatabaseController {
-    private static final boolean MONGO = true, FILES = false; //decides whether to search + update the mongo database or the file directory
+    private static final boolean MONGO = false, FILES = false, NEO = true; //decides whether to search + update the mongo database or the file directory
     private FileController fc = new FileController();
-    private MongoController mango = new MongoController();
+    private MongoController mango;
+    private NeoController neo;
     private HashMap<Integer, Employee> employeeID = new HashMap<>();
     private HashMap<String, Employee> employeeLName = new HashMap<>();
 
 
     public void setup(){
-        Employee[] list = fc.readAllFiles();
-        for(Employee select: list){
-            employeeID.put(select.getId(), select);
-            employeeLName.put(select.getLastName(), select);
+        if(NEO){
+            neo = new NeoController();
         }
-        fc.serializeAllEmployees(getIdHashmapToArray());
+        if(MONGO){
+            mango = new MongoController();
+        }
+        if(FILES){
+            Employee[] list = fc.readAllFiles();
+            for(Employee select: list){
+                employeeID.put(select.getId(), select);
+                employeeLName.put(select.getLastName(), select);
+            }
+            fc.serializeAllEmployees(getIdHashmapToArray());
+        }
     }
 
     public String addEmployee(String first, String last, int year){
@@ -93,59 +102,74 @@ public class DatabaseController {
         }
     }
 
-    public void addFilesToMongo(boolean wipe){
-        if(wipe){
-            mango.wipeCollection();
+    public void addFileListToMongo(boolean wipe){
+        if(MONGO && FILES){
+            if(wipe){
+                mango.wipeCollection();
+            }
+            mango.importEmployees(getDocumentList());
         }
-        mango.importEmployees(getDocumentList());
     }
 
     public void mergeFilesWithMongo(){
-        mango.mergeDatabase(getIdHashmapToArray());
-    }
-
-    public String findMongoEmployee(int employeeId){
-        Employee found = mango.readDatabase(employeeId);
-        if (found != null){
-            return found.toString();
-        }else {
-            return null;
+        if(MONGO && FILES){
+            mango.mergeDatabase(getIdHashmapToArray());
         }
     }
 
-    public String findFileEmployee(int employeeId){
-        Employee found = employeeID.get(employeeId);
-        if (found != null){
-            return found.toString();
-        }else {
-            return null;
+
+    public String findEmployeeById(int employeeId){
+        if(MONGO){
+            Employee found = mango.readDatabase(employeeId);
+            if (found != null){
+                return found.toString();
+            }
+        } else if(FILES){
+            Employee found = employeeID.get(employeeId);
+            if (found != null){
+                return found.toString();
+            }
         }
+        return null;
     }
 
-    public String findFileEmployee(String lastName){
-        Employee found = employeeLName.get(lastName);
-        if (found != null){
-            return found.toString();
-        }else {
-            return null;
+
+    public String findEmployeeByLastName(String lastName){
+        if (FILES){
+            Employee found = employeeLName.get(lastName);
+            if (found != null){
+                return found.toString();
+            }
         }
+        return null;
     }
+
+
+
 
     public String showSerializedFile(int employeeId){
-        return fc.showSerializedContent(employeeId);
+        if(FILES){
+            return fc.showSerializedContent(employeeId);
+        }
+        return null;
     }
 
     public void shutDown(){
-        mango.closeMongoClient();
+        if(MONGO){
+            mango.closeMongoClient();
+        }
+        if(NEO){
+            neo.closeNeoConnection();
+        }
     }
 
     private Employee[] getIdHashmapToArray(){
-       ArrayList<Employee> thing = new ArrayList<>();
-       thing.addAll(employeeID.values());
-       return thing.toArray(new Employee[thing.size()]);
+        ArrayList<Employee> thing = new ArrayList<>();
+        thing.addAll(employeeID.values());
+        return thing.toArray(new Employee[thing.size()]);
     }
 
-    public List<Document> getDocumentList(){
+    private List<Document> getDocumentList(){
         ObjectMapper map = new ObjectMapper();
         List<Document> doc = new ArrayList<>();
 
@@ -159,10 +183,5 @@ public class DatabaseController {
         }
         return doc;
     }
-
-
-
-
-
 
 }
