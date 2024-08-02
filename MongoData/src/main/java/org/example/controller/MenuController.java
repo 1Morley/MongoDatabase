@@ -37,6 +37,7 @@ public class MenuController {
                 case 2:
                     int deleteId = ui.getEmployeeId();
                     data.deleteEmployee(deleteId);
+
                     break;
                 case 3:
                     ui.displayInfo(data.findEmployeeById(ui.getEmployeeId()), "Employee");

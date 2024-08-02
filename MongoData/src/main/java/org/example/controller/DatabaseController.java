@@ -184,4 +184,22 @@ public class DatabaseController {
         return doc;
     }
 
+    //Neo4j
+
+    public void uploadDataToNeo(){
+        neo.uploadData(new HashSet<>(employeeID.values()));
+    }
+    public void deleteNeoEmployee(int id){
+        neo.deleteEmployee(id);
+    }
+    public void insertNeoEmployee(Employee employee){
+        neo.insertEmlpoyee(employee);
+    }
+    public void closeNeoConnection(){
+        neo.closeNeoConnection();
+    }
+
+    // End of Neo4j
+
+
 }
