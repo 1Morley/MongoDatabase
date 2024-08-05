@@ -8,14 +8,15 @@ package org.example.controller;
 
 import org.example.model.Employee;
 import org.neo4j.driver.*;
+import org.neo4j.driver.Record;
 
 import java.util.HashSet;
+import java.util.List;
 
 public class NeoController {
-    //TODO in order for this to work, neo4j needs to be running in the background and have the proper user,password,and localhost number
-    // so either make a login at start, have 2 databases that have the same info, or maybe get the remote db to work (which I can't make because neo4j gives me errors)
     private final String URI = "neo4j://localhost:7687/neo4j", user = "neo4j", password = "password";
     Driver database;
+
 
     public NeoController(){
         database = GraphDatabase.driver(URI, AuthTokens.basic(user, password));
@@ -30,10 +31,10 @@ public class NeoController {
     }
     public void uploadData(HashSet<Employee> employees){
         for(Employee employee: employees){
-            insertEmlpoyee(employee);
+            insertEmployee(employee);
         }
     }
-    public void insertEmlpoyee(Employee employee){
+    public void insertEmployee(Employee employee){
         try (Session session = database.session()) {
             String cypherQuery = "CREATE (e:Employee {id: $id, firstName: $firstName, lastName: $lastName, year: $year})";
             try (Transaction tx = session.beginTransaction()) {
@@ -47,7 +48,6 @@ public class NeoController {
                 tx.commit();
             }
         }
-        System.out.println("Employee inserted");
     }
     public void deleteEmployee(int id){
         try (Session session = database.session()) {
@@ -57,6 +57,50 @@ public class NeoController {
                 tx.commit();
             }
         }
-        System.out.println("Employee deleted");
+    }
+
+    public Employee findEmployee(int id){
+        Employee foundEmployee = null;
+        try (Session session = database.session()) {
+            String cypherQuery = "MATCH (e:Employee) WHERE e.id = $id RETURN e";
+            Transaction action = session.beginTransaction();
+                Result query = action.run(cypherQuery, org.neo4j.driver.Values.parameters("id", id));
+                List<Record> dataList = query.list();
+                if (!dataList.isEmpty()){
+                    foundEmployee = new Employee(dataList.get(0).values().get(0).get("id").asInt()
+                            ,dataList.get(0).values().get(0).get("firstName").asString()
+                            ,dataList.get(0).values().get(0).get("lastName").asString()
+                            ,dataList.get(0).values().get(0).get("year").asInt());
+                }
+                action.close();
+        }
+        return foundEmployee;
+    }
+
+    public void updateEmployee(int id, String firstName, String lastName, int year){
+        try (Session session = database.session()) {
+            String cypherQuery = "MATCH (e:Employee) WHERE e.id = $id SET e.firstName = $firstName, e.lastName = $lastName, e.year = $year";
+            Transaction action = session.beginTransaction();
+            Result query = action.run(cypherQuery, org.neo4j.driver.Values.parameters(
+                    "id", id,
+                    "firstName", firstName,
+                    "lastName", lastName,
+                    "year", year));
+            action.commit();
+            action.close();
+        }
+    }
+
+    public int findNextId(){
+        int returnId = -10;
+        try (Session session = database.session()) {
+            String cypherQuery = "match (e:Employee) return max(e.id)";
+            Transaction action = session.beginTransaction();
+            Result query = action.run(cypherQuery);
+            List<Record> dataList = query.list();
+            returnId = dataList.get(0).values().get(0).asInt();
+            action.close();
+        }
+        return returnId + 1;
     }
 }

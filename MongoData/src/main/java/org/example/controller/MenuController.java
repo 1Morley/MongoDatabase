@@ -32,7 +32,8 @@ public class MenuController {
                             , "Exit"})){
                 case 1:
                     String[] addInfo = ui.getFullEmployeeInfo(false);
-                    ui.displayInfo(data.addEmployee(addInfo[0], addInfo[1], Integer.valueOf(addInfo[2])), "Employee");
+                    int newEmployeeId = data.addEmployee(addInfo[0], addInfo[1], Integer.valueOf(addInfo[2]));
+                    ui.displayInfo(data.findEmployeeById(newEmployeeId).toString(),"Employee");
                     break;
                 case 2:
                     int deleteId = ui.getEmployeeId();
@@ -40,16 +41,16 @@ public class MenuController {
 
                     break;
                 case 3:
-                    ui.displayInfo(data.findEmployeeById(ui.getEmployeeId()), "Employee");
+                    ui.displayInfo(data.findEmployeeById(ui.getEmployeeId()).toString(), "Employee");
                     break;
                 case 4:
                     int id = ui.getEmployeeId();
-                    String oldData = data.findEmployeeById(id);
+                    String oldData = data.findEmployeeById(id).toString();
                     ui.displayInfo(oldData, "Old Employee");
                     if(oldData != null){
                         String[] updateInfo = ui.getFullEmployeeInfo(true);
                         data.updateEmployee(id, updateInfo[0], updateInfo[1], Integer.valueOf(updateInfo[2]));
-                        ui.displayInfo(data.findEmployeeById(id), "Updated Employee");
+                        ui.displayInfo(data.findEmployeeById(id).toString(), "Updated Employee");
                     }
                     break;
                 case 5:
@@ -62,10 +63,10 @@ public class MenuController {
                             "Replace Collection (ALL PREVIOUS DOCUMENTS WILL BE DELETED)",
                             "Merge Databases (REPLACE PRE-EXISTING IDS)"})){
                         case 1:
-                            data.addFileListToMongo(false);
+                            data.addFileListToOtherDatabase(false);
                             break;
                         case 2:
-                            data.addFileListToMongo(true);
+                            data.addFileListToOtherDatabase(true);
                             break;
                         case 3:
                             data.mergeFilesWithMongo();

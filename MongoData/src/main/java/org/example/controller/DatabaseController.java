@@ -14,13 +14,12 @@ import org.example.model.Employee;
 import java.util.*;
 
 public class DatabaseController {
-    private static final boolean MONGO = false, FILES = false, NEO = true; //decides whether to search + update the mongo database or the file directory
+    private static final boolean MONGO = false, FILES = true, NEO = true; //decides whether to search + update the mongo database or the file directory
     private FileController fc = new FileController();
     private MongoController mango;
     private NeoController neo;
     private HashMap<Integer, Employee> employeeID = new HashMap<>();
     private HashMap<String, Employee> employeeLName = new HashMap<>();
-
 
     public void setup(){
         if(NEO){
@@ -39,12 +38,11 @@ public class DatabaseController {
         }
     }
 
-    public String addEmployee(String first, String last, int year){
+    public int addEmployee(String first, String last, int year){
         int id;
         if(MONGO){
             id = mango.getNextID();
             mango.addToDatabase(new Employee(id,first,last,year));
-            return mango.readDatabase(id).toString();
         }
         if (FILES){
             id = Collections.max(employeeID.keySet()) + 1;
@@ -54,9 +52,13 @@ public class DatabaseController {
             employeeID.put(employee.getId(), employee);
             employeeLName.put(employee.getLastName(), employee);
             fc.updateEmployeeFile(employee);
-            return employeeID.get(id).toString();
         }
-        return null;
+        if(NEO){
+            id = neo.findNextId();
+            neo.insertEmployee(new Employee(id, first, last, year));
+        }
+
+        return id;
     }
 
     public void deleteEmployee(int employeeId){
@@ -71,9 +73,24 @@ public class DatabaseController {
             }
 
         }
+        if(NEO){
+            neo.deleteEmployee(employeeId);
+        }
     }
 
     public void updateEmployee(int employeeId, String first, String last, int year){
+        Employee oldVersion = findEmployeeById(employeeId);
+
+        if(first == null || first.isEmpty()){
+            first = oldVersion.getFirstName();
+        }
+        if(last == null || last.isEmpty()){
+            last = oldVersion.getLastName();
+        }
+        if(year == 0){
+            year = oldVersion.getYear();
+        }
+
         if(MONGO){
             mango.updateFromDatabase(employeeId, first, last, year);
         }
@@ -100,14 +117,20 @@ public class DatabaseController {
 
             }
         }
+        if(NEO){
+            neo.updateEmployee(employeeId, first, last, year);
+        }
     }
 
-    public void addFileListToMongo(boolean wipe){
+    public void addFileListToOtherDatabase(boolean wipe){
         if(MONGO && FILES){
             if(wipe){
                 mango.wipeCollection();
             }
             mango.importEmployees(getDocumentList());
+        }
+        if(NEO && FILES){
+            neo.uploadData(new HashSet<>(employeeID.values()));
         }
     }
 
@@ -118,16 +141,24 @@ public class DatabaseController {
     }
 
 
-    public String findEmployeeById(int employeeId){
+    public Employee findEmployeeById(int employeeId){
+        Employee found = null;
         if(MONGO){
-            Employee found = mango.readDatabase(employeeId);
+            found = mango.readDatabase(employeeId);
             if (found != null){
-                return found.toString();
+                return found;
             }
-        } else if(FILES){
-            Employee found = employeeID.get(employeeId);
+        }
+        if (NEO && found == null){
+            found = neo.findEmployee(employeeId);
             if (found != null){
-                return found.toString();
+                return found;
+            }
+        }
+        if(FILES && found == null){
+            found = employeeID.get(employeeId);
+            if (found != null){
+                return found;
             }
         }
         return null;
@@ -183,23 +214,6 @@ public class DatabaseController {
         }
         return doc;
     }
-
-    //Neo4j
-
-    public void uploadDataToNeo(){
-        neo.uploadData(new HashSet<>(employeeID.values()));
-    }
-    public void deleteNeoEmployee(int id){
-        neo.deleteEmployee(id);
-    }
-    public void insertNeoEmployee(Employee employee){
-        neo.insertEmlpoyee(employee);
-    }
-    public void closeNeoConnection(){
-        neo.closeNeoConnection();
-    }
-
-    // End of Neo4j
 
 
 }
