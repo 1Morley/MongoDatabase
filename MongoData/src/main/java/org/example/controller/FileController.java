@@ -177,7 +177,7 @@ public class FileController {
                 try {
                     int boss = Integer.parseInt(data[0]);
                     int employee = Integer.parseInt(data[1]);
-                    m.put(boss, employee);
+                    m.put(employee, boss); //switched to employee as key, boss as value
                 } catch (NumberFormatException e) {
                     System.out.println("Error in file: " + line + " line was skipped");
                 }

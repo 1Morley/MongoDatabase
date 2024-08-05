@@ -254,7 +254,8 @@ public class DatabaseController {
     private void loadRelationships(){
             HashMap<Integer, Integer> relations = fc.getEmployeeReltations();
             for (Map.Entry<Integer, Integer> select : relations.entrySet()) {
-                addNeoRelationship(select.getValue(), select.getKey());
+                addNeoRelationship(select.getKey(), select.getValue()); //switch employee to key and boss to value
+                                                                        //under the impression that employees report to one person
             }
     }
 }
