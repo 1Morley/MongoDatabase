@@ -21,9 +21,11 @@ public class DatabaseController {
     private HashMap<Integer, Employee> employeeID = new HashMap<>();
     private HashMap<String, Employee> employeeLName = new HashMap<>();
 
+
     public void setup(){
         if(NEO){
             neo = new NeoController();
+            loadRelationships();
         }
         if(MONGO){
             mango = new MongoController();
@@ -247,5 +249,12 @@ public class DatabaseController {
         if(NEO) {
             neo.updateRelationship(id, oldConnectedId, newConnectedId);
         }
+    }
+
+    private void loadRelationships(){
+            HashMap<Integer, Integer> relations = fc.getEmployeeReltations();
+            for (Map.Entry<Integer, Integer> select : relations.entrySet()) {
+                addNeoRelationship(select.getValue(), select.getKey());
+            }
     }
 }

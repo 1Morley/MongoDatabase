@@ -21,6 +21,7 @@ import java.util.*;
 
 public class FileController {
     private final static String DATA_FOLDER_PATH = "C:\\Assignment 1 - data-1\\people\\long\\", SERIAL_FOLDER_PATH = "C:\\Assignment 1 - data-1\\people\\long serialized\\", FILE_EXTENSION = ".txt", SERIAL_EXTENSION = ".ser";
+    public final static String RELATIONS_PATH = "C:\\Users\\aballard\\Downloads\\reportsTo.csv";
     //private HashMap<Integer, Employee> employeeID = new HashMap<>();
     //private HashMap<String, Employee> employeeLName = new HashMap<>();
 
@@ -164,6 +165,29 @@ public class FileController {
         }
     }
 
+    public HashMap<Integer, Integer> getEmployeeReltations(){
+        HashMap<Integer, Integer> m = new HashMap<>();
+        BufferedReader r;
+        try {
+            r = new BufferedReader(new FileReader(RELATIONS_PATH));
+            String line;
+            while ((line = r.readLine()) != null) {
+
+                String[] data = line.split(",");
+                try {
+                    int boss = Integer.parseInt(data[0]);
+                    int employee = Integer.parseInt(data[1]);
+                    m.put(boss, employee);
+                } catch (NumberFormatException e) {
+                    System.out.println("Error in file: " + line + " line was skipped");
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return m;
+    }
 
 
 
