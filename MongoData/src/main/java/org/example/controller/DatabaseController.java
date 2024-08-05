@@ -14,7 +14,7 @@ import org.example.model.Employee;
 import java.util.*;
 
 public class DatabaseController {
-    private static final boolean MONGO = false, FILES = true, NEO = true; //decides whether to search + update the mongo database or the file directory
+    public static final boolean MONGO = false, FILES = true, NEO = true; //decides whether to search + update the mongo database or the file directory
     private FileController fc = new FileController();
     private MongoController mango;
     private NeoController neo;
@@ -43,8 +43,10 @@ public class DatabaseController {
         if(MONGO){
             id = mango.getNextID();
             mango.addToDatabase(new Employee(id,first,last,year));
-        }
-        if (FILES){
+        }else if(NEO){
+            id = neo.findNextId();
+            neo.insertEmployee(new Employee(id, first, last, year));
+        }else if (FILES){
             id = Collections.max(employeeID.keySet()) + 1;
 
             Employee employee = new Employee(id, first, last, year);
@@ -52,10 +54,6 @@ public class DatabaseController {
             employeeID.put(employee.getId(), employee);
             employeeLName.put(employee.getLastName(), employee);
             fc.updateEmployeeFile(employee);
-        }
-        if(NEO){
-            id = neo.findNextId();
-            neo.insertEmployee(new Employee(id, first, last, year));
         }
 
         return id;
@@ -216,4 +214,38 @@ public class DatabaseController {
     }
 
 
+    public void addNeoRelationship(int id, int connectedId){
+        if(NEO){
+            neo.createRelationship(id, connectedId);
+        }
+
+    }
+
+    public void deleteNeoRelationship(int id, int connectedId){
+        if(NEO) {
+            neo.deleteRelationship(id, connectedId);
+        }
+    }
+
+    public String[] listAllNeoRelationships(int id){
+        if(NEO) {
+            int[] idList = neo.findRelationships(id);
+            String[] nameList = new String[idList.length];
+            if (idList == null) {
+                return null;
+            }
+            for (int i = 0; i < idList.length; i++) {
+                Employee connectedEmployee = findEmployeeById(idList[i]);
+                nameList[i] = connectedEmployee.getFirstName() + " " + connectedEmployee.getLastName();
+            }
+            return nameList;
+        }
+        return null;
+    }
+
+    public void updateNeoRelationship(int id, int oldConnectedId, int newConnectedId ){
+        if(NEO) {
+            neo.updateRelationship(id, oldConnectedId, newConnectedId);
+        }
+    }
 }

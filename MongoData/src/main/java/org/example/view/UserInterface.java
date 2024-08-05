@@ -129,6 +129,10 @@ public class UserInterface {
         return getIntInput("Enter EmployeeID: ");
     }
 
+    public int getEmployeeId(String type){
+        return getIntInput("Enter " + type + " EmployeeID: ");
+    }
+
     public String[] getFullEmployeeInfo(boolean allowNulls){
         String[] info = new String[3];
 
@@ -138,4 +142,30 @@ public class UserInterface {
 
         return info;
     }
+
+    public void displayEmployeeRelationship(String[] list){
+        System.out.println("List:");
+        for(String select: list){
+            System.out.println("    - " + select);
+        }
+    }
+
+    public boolean userConfirmation(String question){
+        String userInput = getString(question + " (y/n)", true);
+        while (true) {
+            if (userInput.isEmpty() ||
+                    userInput.toLowerCase().equals("no") ||
+                    userInput.toLowerCase().equals("n")) {
+
+                return false;
+            } else if (userInput.toLowerCase().equals("yes") ||
+                    userInput.toLowerCase().equals("y")) {
+
+                return true;
+            }else{
+                System.out.println("Invalid input.");
+            }
+        }
+    }
+
 }

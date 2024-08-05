@@ -6,6 +6,7 @@
  */
 package org.example.controller;
 
+import org.example.model.Employee;
 import org.example.view.UserInterface;
 
 import java.time.LocalTime;
@@ -29,19 +30,32 @@ public class MenuController {
                             , "Update Employee"
                             , "Show Serialized Content (Only works if File database is active)"
                             , "Import Files to Mongo (Only works if File and Mongo database is active)"
+                            , "Edit Neo Relationship"
                             , "Exit"})){
                 case 1:
                     String[] addInfo = ui.getFullEmployeeInfo(false);
                     int newEmployeeId = data.addEmployee(addInfo[0], addInfo[1], Integer.valueOf(addInfo[2]));
-                    ui.displayInfo(data.findEmployeeById(newEmployeeId).toString(),"Employee");
+                    Employee createdEmployee = data.findEmployeeById(newEmployeeId);
+                    ui.displayInfo(createdEmployee.toString(),"Employee");
+                    if(data.NEO && ui.userConfirmation("Do you want to add a relation?")){
+                        do{
+                            data.addNeoRelationship(createdEmployee.getId(), ui.getEmployeeId("Connected"));
+                        }while(ui.userConfirmation("Add another?"));
+                    }
                     break;
                 case 2:
                     int deleteId = ui.getEmployeeId();
                     data.deleteEmployee(deleteId);
-
                     break;
                 case 3:
-                    ui.displayInfo(data.findEmployeeById(ui.getEmployeeId()).toString(), "Employee");
+                    int searchId = ui.getEmployeeId();
+                    ui.displayInfo(data.findEmployeeById(searchId).toString(), "Employee");
+                    if(data.NEO){
+                        String[] relList = data.listAllNeoRelationships(searchId);
+                        if(relList != null){
+                            ui.displayEmployeeRelationship(relList);
+                        }
+                    }
                     break;
                 case 4:
                     int id = ui.getEmployeeId();
@@ -70,6 +84,23 @@ public class MenuController {
                             break;
                         case 3:
                             data.mergeFilesWithMongo();
+                            break;
+                    }
+                    break;
+                case 7:
+                    switch (ui.displayMenu(new String[]{
+                            "Add Relationship",
+                            "Delete Relationship",
+                            "Update Relationship"})){
+                        case 1:
+                            data.addNeoRelationship(ui.getEmployeeId(), ui.getEmployeeId("Connected"));
+                            break;
+                        case 2:
+                            data.deleteNeoRelationship(ui.getEmployeeId(), ui.getEmployeeId("Connected"));
+                            break;
+                        case 3:
+                            data.updateNeoRelationship(
+                                    ui.getEmployeeId(), ui.getEmployeeId("Old Connected"),ui.getEmployeeId("New Connected"));
                             break;
                     }
                     break;
