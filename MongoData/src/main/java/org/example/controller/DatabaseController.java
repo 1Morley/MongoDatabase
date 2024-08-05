@@ -14,13 +14,12 @@ import org.example.model.Employee;
 import java.util.*;
 
 public class DatabaseController {
-    private static final boolean MONGO = false, FILES = false, NEO = true; //decides whether to search + update the mongo database or the file directory
+    public static final boolean MONGO = false, FILES = true, NEO = true; //decides whether to search + update the mongo database or the file directory
     private FileController fc = new FileController();
     private MongoController mango;
     private NeoController neo;
     private HashMap<Integer, Employee> employeeID = new HashMap<>();
     private HashMap<String, Employee> employeeLName = new HashMap<>();
-
 
     public void setup(){
         if(NEO){
@@ -39,19 +38,15 @@ public class DatabaseController {
         }
     }
 
-    public String addEmployee(String first, String last, int year){
+    public int addEmployee(String first, String last, int year){
         int id;
         if(MONGO){
             id = mango.getNextID();
             mango.addToDatabase(new Employee(id,first,last,year));
-            return mango.readDatabase(id).toString();
-        }
-        if (NEO){
-            id = neo.getNextID();
-            neo.insertEmlpoyee(new Employee(id,first,last,year));
-            //return neo.findEmployeeById(id).toString();
-        }
-        if (FILES){
+        }else if(NEO){
+            id = neo.findNextId();
+            neo.insertEmployee(new Employee(id, first, last, year));
+        }else if (FILES){
             id = Collections.max(employeeID.keySet()) + 1;
 
             Employee employee = new Employee(id, first, last, year);
@@ -59,17 +54,14 @@ public class DatabaseController {
             employeeID.put(employee.getId(), employee);
             employeeLName.put(employee.getLastName(), employee);
             fc.updateEmployeeFile(employee);
-            return employeeID.get(id).toString();
         }
-        return null;
+
+        return id;
     }
 
     public void deleteEmployee(int employeeId){
         if(MONGO){
             mango.deleteFromDatabase(employeeId);
-        }
-        if (NEO){
-            neo.deleteEmployee(employeeId);
         }
         if (FILES){
             if (employeeID.containsKey(employeeId)) {
@@ -79,9 +71,24 @@ public class DatabaseController {
             }
 
         }
+        if(NEO){
+            neo.deleteEmployee(employeeId);
+        }
     }
 
     public void updateEmployee(int employeeId, String first, String last, int year){
+        Employee oldVersion = findEmployeeById(employeeId);
+
+        if(first == null || first.isEmpty()){
+            first = oldVersion.getFirstName();
+        }
+        if(last == null || last.isEmpty()){
+            last = oldVersion.getLastName();
+        }
+        if(year == 0){
+            year = oldVersion.getYear();
+        }
+
         if(MONGO){
             mango.updateFromDatabase(employeeId, first, last, year);
         }
@@ -108,14 +115,20 @@ public class DatabaseController {
 
             }
         }
+        if(NEO){
+            neo.updateEmployee(employeeId, first, last, year);
+        }
     }
 
-    public void addFileListToMongo(boolean wipe){
+    public void addFileListToOtherDatabase(boolean wipe){
         if(MONGO && FILES){
             if(wipe){
                 mango.wipeCollection();
             }
             mango.importEmployees(getDocumentList());
+        }
+        if(NEO && FILES){
+            neo.uploadData(new HashSet<>(employeeID.values()));
         }
     }
 
@@ -126,16 +139,24 @@ public class DatabaseController {
     }
 
 
-    public String findEmployeeById(int employeeId){
+    public Employee findEmployeeById(int employeeId){
+        Employee found = null;
         if(MONGO){
-            Employee found = mango.readDatabase(employeeId);
+            found = mango.readDatabase(employeeId);
             if (found != null){
-                return found.toString();
+                return found;
             }
-        } else if(FILES){
-            Employee found = employeeID.get(employeeId);
+        }
+        if (NEO && found == null){
+            found = neo.findEmployee(employeeId);
             if (found != null){
-                return found.toString();
+                return found;
+            }
+        }
+        if(FILES && found == null){
+            found = employeeID.get(employeeId);
+            if (found != null){
+                return found;
             }
         }
         return null;
@@ -192,16 +213,39 @@ public class DatabaseController {
         return doc;
     }
 
-    //Neo4j
 
-    public void uploadDataToNeo(){
-        neo.uploadData(new HashSet<>(employeeID.values()));
+    public void addNeoRelationship(int id, int connectedId){
+        if(NEO){
+            neo.createRelationship(id, connectedId);
+        }
+
     }
-    public void closeNeoConnection(){
-        neo.closeNeoConnection();
+
+    public void deleteNeoRelationship(int id, int connectedId){
+        if(NEO) {
+            neo.deleteRelationship(id, connectedId);
+        }
     }
 
-    // End of Neo4j
+    public String[] listAllNeoRelationships(int id){
+        if(NEO) {
+            int[] idList = neo.findRelationships(id);
+            String[] nameList = new String[idList.length];
+            if (idList == null) {
+                return null;
+            }
+            for (int i = 0; i < idList.length; i++) {
+                Employee connectedEmployee = findEmployeeById(idList[i]);
+                nameList[i] = connectedEmployee.getFirstName() + " " + connectedEmployee.getLastName();
+            }
+            return nameList;
+        }
+        return null;
+    }
 
-
+    public void updateNeoRelationship(int id, int oldConnectedId, int newConnectedId ){
+        if(NEO) {
+            neo.updateRelationship(id, oldConnectedId, newConnectedId);
+        }
+    }
 }

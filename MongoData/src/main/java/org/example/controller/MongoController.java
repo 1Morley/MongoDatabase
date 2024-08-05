@@ -121,22 +121,9 @@ public class MongoController {
      * @param EmployeeID The ID of the employee you want updated
      */
     public void updateFromDatabase(int EmployeeID, String firstname, String lastname, int year) {
-        Employee employee = readDatabase(EmployeeID);
+        Employee newEmployee = new Employee(EmployeeID, firstname, lastname, year);
 
-
-        if(firstname == null || firstname.isEmpty()){
-            firstname = employee.getFirstName();
-        }
-        if(lastname == null || lastname.isEmpty()){
-            lastname = employee.getLastName();
-        }
-        if(year == 0){
-            year = employee.getYear();
-        }
-
-        Employee newEmployee = new Employee(employee.getId(), firstname, lastname, year);
-
-        deleteFromDatabase(employee.getId());
+        deleteFromDatabase(EmployeeID);
         addToDatabase(newEmployee);
     }
 
