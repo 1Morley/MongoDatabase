@@ -29,17 +29,17 @@ public class MenuController {
                             , "Find Employee"
                             , "Update Employee"
                             , "Show Serialized Content (Only works if File database is active)"
-                            , "Import Files to Mongo (Only works if File and Mongo database is active)"
-                            , "Edit Neo Relationship"
+                            , "Import Files to Mongo (Only works if File and another database is active)"
+                            , "Edit Neo Relationship (Only works if Neo4j database is active)"
                             , "Exit"})){
                 case 1:
                     String[] addInfo = ui.getFullEmployeeInfo(false);
                     int newEmployeeId = data.addEmployee(addInfo[0], addInfo[1], Integer.valueOf(addInfo[2]));
-                    Employee createdEmployee = data.findEmployeeById(newEmployeeId);
-                    ui.displayInfo(createdEmployee.toString(),"Employee");
+
+                    ui.displayInfo(data.getEmployeeString(newEmployeeId),"Employee");
                     if(data.NEO && ui.userConfirmation("Do you want to add a relation?")){
                         do{
-                            data.addNeoRelationship(createdEmployee.getId(), ui.getEmployeeId("Connected"));
+                            data.addNeoRelationship(newEmployeeId, ui.getEmployeeId("Connected"));
                         }while(ui.userConfirmation("Add another?"));
                     }
                     break;
@@ -49,7 +49,7 @@ public class MenuController {
                     break;
                 case 3:
                     int searchId = ui.getEmployeeId();
-                    ui.displayInfo(data.findEmployeeById(searchId).toString(), "Employee");
+                    ui.displayInfo(data.getEmployeeString(searchId), "Employee");
                     if(data.NEO){
                         String[] relList = data.listAllNeoRelationships(searchId);
                         if(relList != null){
@@ -59,12 +59,12 @@ public class MenuController {
                     break;
                 case 4:
                     int id = ui.getEmployeeId();
-                    String oldData = data.findEmployeeById(id).toString();
+                    String oldData = data.getEmployeeString(id);
                     ui.displayInfo(oldData, "Old Employee");
                     if(oldData != null){
                         String[] updateInfo = ui.getFullEmployeeInfo(true);
                         data.updateEmployee(id, updateInfo[0], updateInfo[1], Integer.valueOf(updateInfo[2]));
-                        ui.displayInfo(data.findEmployeeById(id).toString(), "Updated Employee");
+                        ui.displayInfo(data.getEmployeeString(id), "Updated Employee");
                     }
                     break;
                 case 5:
@@ -72,19 +72,23 @@ public class MenuController {
                     ui.displayInfo(serialData, "Serialized File");
                     break;
                 case 6:
-                    switch (ui.displayMenu(new String[]{
-                            "Import All (RISK OF REPEAT IDS)",
-                            "Replace Collection (ALL PREVIOUS DOCUMENTS WILL BE DELETED)",
-                            "Merge Databases (REPLACE PRE-EXISTING IDS)"})){
-                        case 1:
-                            data.addFileListToOtherDatabase(false);
-                            break;
-                        case 2:
-                            data.addFileListToOtherDatabase(true);
-                            break;
-                        case 3:
-                            data.mergeFilesWithMongo();
-                            break;
+                    if(data.MONGO){
+                        switch (ui.displayMenu(new String[]{
+                                "Import All (RISK OF REPEAT IDS)",
+                                "Replace Collection (ALL PREVIOUS DOCUMENTS WILL BE DELETED)",
+                                "Merge Databases (REPLACE PRE-EXISTING IDS)"})){
+                            case 1:
+                                data.addFileListToOtherDatabase(false);
+                                break;
+                            case 2:
+                                data.addFileListToOtherDatabase(true);
+                                break;
+                            case 3:
+                                data.mergeFilesWithMongo();
+                                break;
+                        }
+                    }else{
+                        data.addFileListToOtherDatabase(false);
                     }
                     break;
                 case 7:

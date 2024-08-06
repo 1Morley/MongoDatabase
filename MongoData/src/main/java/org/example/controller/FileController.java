@@ -21,7 +21,7 @@ import java.util.*;
 
 public class FileController {
     private final static String DATA_FOLDER_PATH = "C:\\Assignment 1 - data-1\\people\\long\\", SERIAL_FOLDER_PATH = "C:\\Assignment 1 - data-1\\people\\long serialized\\", FILE_EXTENSION = ".txt", SERIAL_EXTENSION = ".ser";
-    public final static String RELATIONS_PATH = "C:\\Users\\aballard\\Downloads\\reportsTo.csv";
+    public final static String RELATIONS_PATH = "C:\\Assignment 1 - data-1\\reportsTo.csv"; //moved into folder because I don't have a user with your name on mine
     //private HashMap<Integer, Employee> employeeID = new HashMap<>();
     //private HashMap<String, Employee> employeeLName = new HashMap<>();
 

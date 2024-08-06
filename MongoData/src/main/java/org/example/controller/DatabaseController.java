@@ -25,7 +25,7 @@ public class DatabaseController {
     public void setup(){
         if(NEO){
             neo = new NeoController();
-            loadRelationships();
+            //moved load relationships into imports because they take a long time and don't need to run every time the program starts
         }
         if(MONGO){
             mango = new MongoController();
@@ -131,6 +131,7 @@ public class DatabaseController {
         }
         if(NEO && FILES){
             neo.uploadData(new HashSet<>(employeeID.values()));
+            loadRelationships();
         }
     }
 
@@ -141,21 +142,19 @@ public class DatabaseController {
     }
 
 
-    public Employee findEmployeeById(int employeeId){
+    private Employee findEmployeeById(int employeeId){
         Employee found = null;
         if(MONGO){
             found = mango.readDatabase(employeeId);
             if (found != null){
                 return found;
             }
-        }
-        if (NEO && found == null){
+        }else if (NEO){
             found = neo.findEmployee(employeeId);
             if (found != null){
                 return found;
             }
-        }
-        if(FILES && found == null){
+        }else if (FILES){
             found = employeeID.get(employeeId);
             if (found != null){
                 return found;
@@ -175,8 +174,13 @@ public class DatabaseController {
         return null;
     }
 
-
-
+    public String getEmployeeString(int employeeId){
+        Employee found = findEmployeeById(employeeId);
+        if(found != null){
+            return found.toString();
+        }
+        return null;
+    }
 
     public String showSerializedFile(int employeeId){
         if(FILES){
@@ -232,11 +236,13 @@ public class DatabaseController {
     public String[] listAllNeoRelationships(int id){
         if(NEO) {
             int[] idList = neo.findRelationships(id);
-            String[] nameList = new String[idList.length];
+            String[] nameList = null;
             if (idList == null) {
                 return null;
             }
+            nameList = new String[idList.length];
             for (int i = 0; i < idList.length; i++) {
+
                 Employee connectedEmployee = findEmployeeById(idList[i]);
                 nameList[i] = connectedEmployee.getFirstName() + " " + connectedEmployee.getLastName();
             }
