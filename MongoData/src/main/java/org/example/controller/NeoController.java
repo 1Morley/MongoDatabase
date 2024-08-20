@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public class NeoController {
-    private final String URI = "neo4j://localhost:7687/neo4j", user = "neo4j", password = "password";
+    private final String URI = "neo4j://localhost:7687/neo4j", user = "school", password = "password";
     Driver database;
 
 
