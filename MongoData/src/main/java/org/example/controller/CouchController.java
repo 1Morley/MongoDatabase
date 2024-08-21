@@ -27,7 +27,7 @@ public class CouchController {
                     .password(password);
 
             dbInstance = new StdCouchDbInstance(build.build());
-            dbConnector = dbInstance.createConnector("test", true);
+            dbConnector = dbInstance.createConnector("my-couchdb", true);
             System.out.println("Couchbase connection successful.");
         }catch (Exception e){
             System.err.println("Couchbase connection failed.");
