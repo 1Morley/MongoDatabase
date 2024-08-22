@@ -1,15 +1,13 @@
 package org.example.controller;
 
-import org.bson.json.JsonObject;
-import org.bson.json.JsonReader;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.http.StdHttpClient;
 import org.ektorp.http.StdHttpClient.Builder;
 import org.ektorp.impl.StdCouchDbInstance;
 
-import java.io.StringReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -69,6 +67,40 @@ public class CouchController {
         } catch (Exception e) {
             System.err.println("Failed to find data.");
             e.printStackTrace();
+        }
+    }
+
+    private void updateData(){
+        Map<String, Object> document = dbConnector.get(Map.class, 365 + "");
+        document.put("name", "John Doe");
+        document.put("age", "32");
+
+        dbConnector.update(document);
+    }
+
+    private void deleteData(String id){
+        try{
+            Map<String, Object> document = dbConnector.get(Map.class, 365 + "");
+            dbConnector.delete(document);
+        }catch (Exception e){
+            System.out.println("Document not found, Delete Failed");
+        }
+    }
+    
+    private void wipeAll(){ //not required it just helps with debugging
+        List<String> idList = dbConnector.getAllDocIds();
+        System.out.println(idList);
+        for(String select : idList){
+            deleteData(select);
+        }
+        System.out.println(dbConnector.getAllDocIds());
+    }
+
+    private void showAll(){ //not required it just helps with debugging
+        List<String> idList = dbConnector.getAllDocIds();
+        System.out.println(idList);
+        for(String select : idList){
+            findData(select);
         }
     }
 }
