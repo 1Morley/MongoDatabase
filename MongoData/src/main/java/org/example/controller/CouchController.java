@@ -60,7 +60,7 @@ public class CouchController {
 
     private void findData(String id) {
         try {
-            Map<String, Object> document = dbConnector.get(Map.class, id);
+            Map<String, Object> document = dbConnector.get(Map.class, id); //for demonstration purposes, we're creating another doc
 
             System.out.println("Document found: ");
             for (Map.Entry<String, Object> entry : document.entrySet()) {
