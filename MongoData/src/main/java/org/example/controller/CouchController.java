@@ -70,8 +70,8 @@ public class CouchController {
         }
     }
 
-    private void updateData(){
-        Map<String, Object> document = dbConnector.get(Map.class, 365 + "");
+    private void updateData(String id){
+        Map<String, Object> document = dbConnector.get(Map.class, id + "");
         document.put("name", "John Doe");
         document.put("age", "32");
 
@@ -80,13 +80,13 @@ public class CouchController {
 
     private void deleteData(String id){
         try{
-            Map<String, Object> document = dbConnector.get(Map.class, 365 + "");
+            Map<String, Object> document = dbConnector.get(Map.class, id + "");
             dbConnector.delete(document);
         }catch (Exception e){
             System.out.println("Document not found, Delete Failed");
         }
     }
-    
+
     private void wipeAll(){ //not required it just helps with debugging
         List<String> idList = dbConnector.getAllDocIds();
         System.out.println(idList);
